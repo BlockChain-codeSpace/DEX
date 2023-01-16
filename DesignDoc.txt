@@ -1,0 +1,46 @@
+// =================== CS251 DEX Project =================== //
+//                      Design Document                      //
+//                   Ari Glenn & Mav Levin                   //
+// ========================================================= //
+
+
+1. Explain why adding and removing liquidity to your exchange does not change the exchange rate.
+Adding liquidity to the exchange does not change the exchange rate due to the fact that when a provider sends a certain amount of eth
+to be added to the liquidity, the contract ensures that the provider has the equivalent amount of tokens (according to the current exchange rate).
+The contract then makes the user send the equivalent amount of eth in tokens based on the exchange rate, ensuring that the exchange rate is not adjusted
+(which would occur should the user add an amount of eth and tokens that are not the same according to the rate, thereby changing it). Similarly,
+when removing liquidity, the amount of eth desired to be removed is only removed from the pool if the user has the equivalent amount of tokens,
+according to the current exchange rate. This prevents the exchange rate from being modified, as removing an inequivalent amount of eth and tokens,
+not based on the current exchange rate from the pool would change the exchange rate.
+
+
+2. Explain your scheme for rewarding liquidity providers and justify the design decisions you made. How does it satisfy the liquidity rewards requirements outlined in Section 7?
+To satisfy the liquidity rewards requirements outlined in Section 7 and reward providers, we used the mapping lps to store the addresses of providers
+and the respective percentage of liquidity they owned. When a new provider joins, the percentage of liquidity owned by every provider is respectively
+adjusted dependent upon the amount of new liquidity provided. To reward providers, whenever a swap is made the user is charged a small fee (3%)
+that is taken out from the amount of tokens or eth that the user will receive after the swap. The fees are added back into the total liquidity,
+effectively reinvested until a provider decides to withdraw their liquidity. Each provider's liquidity is increased by the fee amount dependent
+upon their percentage of the pool owned. This ensures that large providers will get a greater percentage of the fees than smaller providers.
+
+
+3. Describe at least one method you used to minimize your exchange contract's gas usage. Why was this method effective?
+One method we used to reduce gas fees was condensing extra loops in the contract that congested the code and removing repetitive blocks code.
+For example, in our removeAllLiquidity function we replaced the code we originally had written with a few checks to calculate the maximum
+amount of liquidity to remove and then made a call to our removeLiquidity function. This method helped to reduce the overall size of the contract
+(using less lines of code), thereby reducing the amount of code that needs to be stored on blockchain and thus reducing the exchange contract's
+gas usage.
+
+
+
+4. Optional Feedback:
+4a. How much time did you spend on the assignment?
+~20 hours
+
+4b. What is one thing that would have been useful to know before starting the assignment?
+Nothing in particular
+
+4c. If you could change one with about this assignment, what would you change?
+Provide extra steps / additional documentation on how to deploy the contract in the real world
+
+4d. Please feel free to include any other feedback you may have below.
+Although this assignment took a lot of time I really enjoyed it and learned a lot
