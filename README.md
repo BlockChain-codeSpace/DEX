@@ -1,11 +1,31 @@
-Stanford University, CS251 Project 4: Building a DEX
+## Stanford University, CS251 Project 4: Building a DEX
 
+Install package
 
-Created a web client and Solidity contracts to implement a decentralized cryptocurrency exchange (similar to Uniswap).
+```
+yarn install
+```
 
-Created own ERC20 token to trade on exchange.
+Run a local Ethereum network node
 
+```
+yarn hardhat node
+```
 
-Author: Ari Glenn (BS'24)
-Starter Code Authors: Simon Tao (BS'22), Mathew Hogan (BS'22), under the guidance of Professor Dan Boneh.
-Special thanks to Justin Shaw (UW '23) for suggestions on how to improve this project.   
+Deploy token smart contract on local network
+
+```
+yarn hardhat run scripts/deploy_token.js --network localhost
+```
+
+Copy your token smart contract's address and paste in `contracts/exchange.sol` . After that, deploy exchange contract on local network
+
+```
+yarn hardhat run scripts/deploy_token.js --network localhost
+```
+
+Copy your abi, smart contract's address (You can find them in folder `artifacts/contracts/contract_name.sol`)
+
+Run `web_app/index.html`
+
+![demo](demo.png)
