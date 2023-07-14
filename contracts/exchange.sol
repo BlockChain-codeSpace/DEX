@@ -150,9 +150,9 @@ contract TokenExchange is Ownable {
             if (lp_providers[i] == msg.sender) {
                 senderExists = true;
                 lps[msg.sender] =
-                    lps[msg.sender] *
-                    old_reserves +
-                    (tokensRequired * denominationVal) /
+                    ((lps[msg.sender] * old_reserves) +
+                        tokensRequired *
+                        denominationVal) /
                     token_reserves;
             } else {
                 lps[lp_providers[i]] =
@@ -174,7 +174,7 @@ contract TokenExchange is Ownable {
         uint amountETH,
         uint max_exchange_rate,
         uint min_exchange_rate
-    ) public payable noReentrant {
+    ) public payable noReentrant noTransferETH noTransferToken {
         /******* TODO: Implement this function *******/
 
         // Determine number of tokens to remove
@@ -207,7 +207,6 @@ contract TokenExchange is Ownable {
             eth_reserves - amountETH > 0,
             "Error: Cannot deplete ETH reserves to 0"
         );
-
         if (token_reserves - amountTokens == 0) amountTokens -= 1;
         if (eth_reserves - amountETH == 0) amountETH -= 1;
 
@@ -218,9 +217,19 @@ contract TokenExchange is Ownable {
         payable(msg.sender).transfer(amountETH);
         eth_reserves = address(this).balance;
         // Update the exchange state
-        lps[msg.sender] =
-            ((lps[msg.sender] * oldReserves) - amountTokens * denominationVal) /
-            token_reserves;
+        uint newLps = ((lps[msg.sender] * oldReserves) -
+            amountTokens *
+            denominationVal) / token_reserves;
+        if (
+            (newLps * (token_reserves - amountTokens)) / 100 <
+            denominationVal ||
+            (newLps * (eth_reserves - amountETH)) / 100 < denominationVal
+        ) {
+            lps[msg.sender] = 0;
+        } else {
+            lps[msg.sender] = newLps;
+        }
+
         // Record index of msg.sender
         uint senderIdx;
         for (uint i = 0; i < lp_providers.length; i++) {
@@ -246,7 +255,8 @@ contract TokenExchange is Ownable {
     ) external payable {
         /******* TODO: Implement this function *******/
         // Calculate total amount possible to remove
-        uint amountETH = (lps[msg.sender] * eth_reserves) / denominationVal;
+        uint amountETH = ((lps[msg.sender] * eth_reserves)) / denominationVal;
+        emit log(amountETH);
         removeLiquidity(amountETH, max_exchange_rate, min_exchange_rate);
     }
 

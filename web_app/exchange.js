@@ -684,7 +684,6 @@ async function getPoolState() {
   let liquidity_tokens = await token_contract.connect(provider.getSigner(defaultAccount)).balanceOf(exchange_address);
   let liquidity_eth = await provider.getBalance(exchange_address);
   let account_tokens = await token_contract.connect(provider.getSigner(defaultAccount)).balanceOf(defaultAccount);
-  console.log(account_tokens);
   let account_lps = await exchange_contract.connect(provider.getSigner(defaultAccount)).getLps();
   return {
     token_liquidity: Number(liquidity_tokens),
@@ -708,7 +707,7 @@ async function getRates(maxSlippagePct) {
   let min_exchange_rate = Math.floor(Number(poolRate * (1 - maxSlippagePct / 100.0)) * Math.pow(10, 12));
   console.log(max_exchange_rate);
   console.log(min_exchange_rate);
-  alert("Send request now?");
+  // alert("Send request now?");
   return { max_exchange_rate, min_exchange_rate };
 }
 
@@ -719,7 +718,7 @@ async function addLiquidity(amountEth, maxSlippagePct) {
     return;
   }
   let rates = await getRates(maxSlippagePct);
-  await token_contract.connect(provider.getSigner(defaultAccount)).approve(exchange_address, amountEth);
+  await token_contract.connect(provider.getSigner(defaultAccount)).increaseAllowance(exchange_address, amountEth);
   await exchange_contract.connect(provider.getSigner(defaultAccount)).addLiquidity(rates.max_exchange_rate, rates.min_exchange_rate, { value: ethers.utils.parseUnits(String(amountEth), "wei") });
 }
 
@@ -745,7 +744,7 @@ async function swapTokensForETH(amountToken, maxSlippagePct) {
     return;
   }
   let rates = await getRates(maxSlippagePct);
-  await token_contract.connect(provider.getSigner(defaultAccount)).approve(exchange_address, amountToken);
+  await token_contract.connect(provider.getSigner(defaultAccount)).increaseAllowance(exchange_address, amountToken);
   console.log(amountToken);
   await exchange_contract.connect(provider.getSigner(defaultAccount)).swapTokensForETH(amountToken, rates.max_exchange_rate);
 }
@@ -830,7 +829,7 @@ $("#remove-liquidity").click(function () {
   defaultAccount = $("#myaccount").val(); //sets the default account
   removeLiquidity($("#amt-eth").val(), $("#max-slippage-liquid").val()).then((response) => {
     window.location.reload(true); // refreshes the page after add_IOU returns and the promise is unwrapped
-  })
+  }).catch((err) => console.log(err))
 });
 
 // This runs the 'removeAllLiquidity' function when you click the button
@@ -962,6 +961,7 @@ const sanityCheck = async function () {
 
     // accumulate some lp rewards
     for (var i = 0; i < 20; i++) {
+      console.log(i);
       await swapETHForTokens(100, 1);
       await swapTokensForETH(100, 1);
     }
